@@ -1,7 +1,4 @@
-
 package com.mycompany.laberintoalgoritmos;
-
-
 import java.util.*;
 
 public class Resultado {
