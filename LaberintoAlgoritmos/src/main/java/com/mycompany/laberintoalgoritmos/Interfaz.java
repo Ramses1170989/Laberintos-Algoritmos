@@ -441,195 +441,260 @@ public class Interfaz extends JFrame {
     }
     
     // Clase interna para dibujar el laberinto
-    private class LaberintoPanel extends JPanel {
-        private Laberinto laberinto;
-        private int tamañoCelda = 25;
-        private List<Integer> rutaActual = new ArrayList<>();
+private class LaberintoPanel extends JPanel {
+    private Laberinto laberinto;
+    private int tamañoCelda = 20;
+    private List<Integer> rutaActual = new ArrayList<>();
+    private boolean[][] paredesHorizontales; // true = hay pared
+    private boolean[][] paredesVerticales;   // true = hay pared
+    
+    public LaberintoPanel(Laberinto laberinto) {
+        this.laberinto = laberinto;
+        calcularTamañoOptimo();
+        inicializarParedes();
+        setBackground(Color.WHITE);
+    }
+    
+    public void setRutaActual(List<Integer> ruta) {
+        this.rutaActual = ruta != null ? ruta : new ArrayList<>();
+        repaint();
+    }
+    
+    private void calcularTamañoOptimo() {
+        int filas = laberinto.getFilas();
+        int columnas = laberinto.getColumnas();
         
-        public LaberintoPanel(Laberinto laberinto) {
-            this.laberinto = laberinto;
-            calcularTamañoOptimo();
-            setBackground(Color.WHITE);
-        }
+        // Calcular tamaño óptimo
+        int anchoDisponible = 400;
+        int altoDisponible = 400;
         
-        public void setRutaActual(List<Integer> ruta) {
-            this.rutaActual = ruta != null ? ruta : new ArrayList<>();
-            repaint();
-        }
+        int tamañoPorAncho = anchoDisponible / columnas;
+        int tamañoPorAlto = altoDisponible / filas;
         
-        private void calcularTamañoOptimo() {
-            int filas = laberinto.getFilas();
-            int columnas = laberinto.getColumnas();
-            
-            // Calcular tamaño óptimo basado en el panel disponible
-            int anchoDisponible = 400; // Ancho aproximado del panel
-            int altoDisponible = 400;  // Alto aproximado del panel
-            
-            int tamañoPorAncho = anchoDisponible / columnas;
-            int tamañoPorAlto = altoDisponible / filas;
-            
-            tamañoCelda = Math.min(Math.max(Math.min(tamañoPorAncho, tamañoPorAlto), 10), 40);
-            
-            // Establecer tamaño preferido del panel
-            setPreferredSize(new Dimension(
-                columnas * tamañoCelda + 1,
-                filas * tamañoCelda + 1
-            ));
-        }
+        tamañoCelda = Math.min(Math.max(Math.min(tamañoPorAncho, tamañoPorAlto), 15), 40);
         
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            
-            Graphics2D g2d = (Graphics2D) g.create();
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            
-            int filas = laberinto.getFilas();
-            int columnas = laberinto.getColumnas();
-            
-            // Dibujar cuadrícula base
-            dibujarCuadricula(g2d, filas, columnas);
-            
-            // Dibujar conexiones (caminos)
-            dibujarConexiones(g2d);
-            
-            // Dibujar ruta actual si existe
-            if (!rutaActual.isEmpty()) {
-                dibujarRuta(g2d);
+        // Establecer tamaño preferido del panel
+        setPreferredSize(new Dimension(
+            columnas * tamañoCelda + 1,
+            filas * tamañoCelda + 1
+        ));
+    }
+    
+    private void inicializarParedes() {
+        int filas = laberinto.getFilas();
+        int columnas = laberinto.getColumnas();
+        
+        // Inicializar todas las paredes como existentes
+        paredesHorizontales = new boolean[filas + 1][columnas];
+        paredesVerticales = new boolean[filas][columnas + 1];
+        
+        // Poner todas las paredes inicialmente
+        for (int i = 0; i <= filas; i++) {
+            for (int j = 0; j < columnas; j++) {
+                paredesHorizontales[i][j] = true;
             }
-            
-            // Dibujar puntos especiales (inicio y fin)
-            dibujarPuntosEspeciales(g2d);
-            
-            g2d.dispose();
         }
         
-        private void dibujarCuadricula(Graphics2D g2d, int filas, int columnas) {
-            // Fondo de las celdas (por defecto serán paredes)
-            g2d.setColor(Color.LIGHT_GRAY);
-            for (int fila = 0; fila < filas; fila++) {
-                for (int col = 0; col < columnas; col++) {
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j <= columnas; j++) {
+                paredesVerticales[i][j] = true;
+            }
+        }
+        
+        // Quitar paredes basándose en las conexiones del grafo
+        for (Map.Entry<Integer, List<Integer>> entrada : laberinto.getGrafo().entrySet()) {
+            Integer nodoOrigen = entrada.getKey();
+            Point posOrigen = nodoAPosicion(nodoOrigen);
+            
+            for (Integer nodoDestino : entrada.getValue()) {
+                Point posDestino = nodoAPosicion(nodoDestino);
+                quitarPared(posOrigen, posDestino);
+            }
+        }
+    }
+    
+    private void quitarPared(Point origen, Point destino) {
+        if (origen.x == destino.x) { // Movimiento vertical
+            int fila = Math.max(origen.y, destino.y);
+            int columna = origen.x;
+            if (fila < paredesHorizontales.length && columna < paredesHorizontales[0].length) {
+                paredesHorizontales[fila][columna] = false;
+            }
+        } else if (origen.y == destino.y) { // Movimiento horizontal
+            int fila = origen.y;
+            int columna = Math.max(origen.x, destino.x);
+            if (fila < paredesVerticales.length && columna < paredesVerticales[0].length) {
+                paredesVerticales[fila][columna] = false;
+            }
+        }
+    }
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        int filas = laberinto.getFilas();
+        int columnas = laberinto.getColumnas();
+        
+        // Dibujar fondo blanco para todas las celdas
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, columnas * tamañoCelda, filas * tamañoCelda);
+        
+        // Dibujar celdas que NO están en el grafo como bloqueadas (grises)
+        g2d.setColor(new Color(200, 200, 200));
+        for (int fila = 0; fila < filas; fila++) {
+            for (int col = 0; col < columnas; col++) {
+                int nodo = fila * columnas + col;
+                if (!laberinto.getGrafo().containsKey(nodo)) {
                     int x = col * tamañoCelda;
                     int y = fila * tamañoCelda;
                     g2d.fillRect(x, y, tamañoCelda, tamañoCelda);
                 }
             }
-            
-            // Dibujar celdas accesibles (nodos del grafo)
-            g2d.setColor(Color.WHITE);
-            for (Integer nodo : laberinto.getGrafo().keySet()) {
-                Point pos = nodoAPosicion(nodo);
-                int x = pos.x * tamañoCelda;
-                int y = pos.y * tamañoCelda;
-                g2d.fillRect(x, y, tamañoCelda, tamañoCelda);
-            }
-            
-            // Dibujar bordes de la cuadrícula
-            g2d.setColor(Color.BLACK);
-            g2d.setStroke(new BasicStroke(1));
-            for (int i = 0; i <= columnas; i++) {
-                g2d.drawLine(i * tamañoCelda, 0, i * tamañoCelda, filas * tamañoCelda);
-            }
-            for (int i = 0; i <= filas; i++) {
-                g2d.drawLine(0, i * tamañoCelda, columnas * tamañoCelda, i * tamañoCelda);
-            }
         }
         
-        private void dibujarConexiones(Graphics2D g2d) {
-            g2d.setColor(new Color(200, 200, 200));
-            g2d.setStroke(new BasicStroke(2));
-            
-            for (Map.Entry<Integer, List<Integer>> entrada : laberinto.getGrafo().entrySet()) {
-                Integer nodoOrigen = entrada.getKey();
-                Point posOrigen = nodoAPosicion(nodoOrigen);
-                
-                for (Integer nodoDestino : entrada.getValue()) {
-                    Point posDestino = nodoAPosicion(nodoDestino);
-                    
-                    // Dibujar línea entre centros de las celdas
-                    int x1 = posOrigen.x * tamañoCelda + tamañoCelda / 2;
-                    int y1 = posOrigen.y * tamañoCelda + tamañoCelda / 2;
-                    int x2 = posDestino.x * tamañoCelda + tamañoCelda / 2;
-                    int y2 = posDestino.y * tamañoCelda + tamañoCelda / 2;
-                    
+        // Dibujar la ruta si existe
+        if (!rutaActual.isEmpty()) {
+            dibujarRuta(g2d);
+        }
+        
+        // Dibujar las paredes
+        dibujarParedes(g2d);
+        
+        // Dibujar puntos especiales (inicio y fin)
+        dibujarPuntosEspeciales(g2d);
+        
+        g2d.dispose();
+    }
+    
+    private void dibujarParedes(Graphics2D g2d) {
+        g2d.setColor(Color.BLACK);
+        g2d.setStroke(new BasicStroke(2));
+        
+        int filas = laberinto.getFilas();
+        int columnas = laberinto.getColumnas();
+        
+        // Dibujar paredes horizontales
+        for (int i = 0; i <= filas; i++) {
+            for (int j = 0; j < columnas; j++) {
+                if (paredesHorizontales[i][j]) {
+                    int x1 = j * tamañoCelda;
+                    int y1 = i * tamañoCelda;
+                    int x2 = (j + 1) * tamañoCelda;
+                    int y2 = i * tamañoCelda;
                     g2d.drawLine(x1, y1, x2, y2);
                 }
             }
         }
         
-        private void dibujarRuta(Graphics2D g2d) {
-            if (rutaActual.size() < 2) return;
-            
-            g2d.setColor(Color.BLUE);
-            g2d.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            
-            for (int i = 0; i < rutaActual.size() - 1; i++) {
-                Point pos1 = nodoAPosicion(rutaActual.get(i));
-                Point pos2 = nodoAPosicion(rutaActual.get(i + 1));
-                
-                int x1 = pos1.x * tamañoCelda + tamañoCelda / 2;
-                int y1 = pos1.y * tamañoCelda + tamañoCelda / 2;
-                int x2 = pos2.x * tamañoCelda + tamañoCelda / 2;
-                int y2 = pos2.y * tamañoCelda + tamañoCelda / 2;
-                
-                g2d.drawLine(x1, y1, x2, y2);
+        // Dibujar paredes verticales
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j <= columnas; j++) {
+                if (paredesVerticales[i][j]) {
+                    int x1 = j * tamañoCelda;
+                    int y1 = i * tamañoCelda;
+                    int x2 = j * tamañoCelda;
+                    int y2 = (i + 1) * tamañoCelda;
+                    g2d.drawLine(x1, y1, x2, y2);
+                }
             }
-            
-            // Dibujar puntos de la ruta
-            g2d.setColor(new Color(0, 0, 255, 150));
-            for (Integer nodo : rutaActual) {
-                Point pos = nodoAPosicion(nodo);
-                int x = pos.x * tamañoCelda + tamañoCelda / 4;
-                int y = pos.y * tamañoCelda + tamañoCelda / 4;
-                g2d.fillOval(x, y, tamañoCelda / 2, tamañoCelda / 2);
-            }
-        }
-        
-        private void dibujarPuntosEspeciales(Graphics2D g2d) {
-            // Punto de inicio (verde)
-            if (laberinto.getInicio() >= 0) {
-                Point posInicio = nodoAPosicion(laberinto.getInicio());
-                g2d.setColor(Color.GREEN);
-                int x = posInicio.x * tamañoCelda + 3;
-                int y = posInicio.y * tamañoCelda + 3;
-                g2d.fillOval(x, y, tamañoCelda - 6, tamañoCelda - 6);
-                
-                // Letra "S" para Start
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(new Font("Arial", Font.BOLD, tamañoCelda / 3));
-                FontMetrics fm = g2d.getFontMetrics();
-                String texto = "S";
-                int textoX = posInicio.x * tamañoCelda + (tamañoCelda - fm.stringWidth(texto)) / 2;
-                int textoY = posInicio.y * tamañoCelda + (tamañoCelda + fm.getAscent()) / 2;
-                g2d.drawString(texto, textoX, textoY);
-            }
-            
-            // Punto final (rojo)
-            if (laberinto.getFin() >= 0) {
-                Point posFin = nodoAPosicion(laberinto.getFin());
-                g2d.setColor(Color.RED);
-                int x = posFin.x * tamañoCelda + 3;
-                int y = posFin.y * tamañoCelda + 3;
-                g2d.fillOval(x, y, tamañoCelda - 6, tamañoCelda - 6);
-                
-                // Letra "E" para End
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(new Font("Arial", Font.BOLD, tamañoCelda / 3));
-                FontMetrics fm = g2d.getFontMetrics();
-                String texto = "E";
-                int textoX = posFin.x * tamañoCelda + (tamañoCelda - fm.stringWidth(texto)) / 2;
-                int textoY = posFin.y * tamañoCelda + (tamañoCelda + fm.getAscent()) / 2;
-                g2d.drawString(texto, textoX, textoY);
-            }
-        }
-        
-        private Point nodoAPosicion(int nodo) {
-            int columnas = laberinto.getColumnas();
-            int fila = nodo / columnas;
-            int columna = nodo % columnas;
-            return new Point(columna, fila);
         }
     }
+    
+    private void dibujarRuta(Graphics2D g2d) {
+        if (rutaActual.size() < 2) return;
+        
+        // Dibujar fondo de la ruta
+        g2d.setColor(new Color(135, 206, 250, 100)); // Azul claro semitransparente
+        for (Integer nodo : rutaActual) {
+            Point pos = nodoAPosicion(nodo);
+            int x = pos.x * tamañoCelda + 2;
+            int y = pos.y * tamañoCelda + 2;
+            g2d.fillRect(x, y, tamañoCelda - 4, tamañoCelda - 4);
+        }
+        
+        // Dibujar línea de la ruta
+        g2d.setColor(new Color(0, 100, 255));
+        g2d.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        
+        for (int i = 0; i < rutaActual.size() - 1; i++) {
+            Point pos1 = nodoAPosicion(rutaActual.get(i));
+            Point pos2 = nodoAPosicion(rutaActual.get(i + 1));
+            
+            int x1 = pos1.x * tamañoCelda + tamañoCelda / 2;
+            int y1 = pos1.y * tamañoCelda + tamañoCelda / 2;
+            int x2 = pos2.x * tamañoCelda + tamañoCelda / 2;
+            int y2 = pos2.y * tamañoCelda + tamañoCelda / 2;
+            
+            g2d.drawLine(x1, y1, x2, y2);
+        }
+    }
+    
+    private void dibujarPuntosEspeciales(Graphics2D g2d) {
+        int margen = 3;
+        int tamaño = tamañoCelda - 2 * margen;
+        
+        // Punto de inicio (verde)
+        if (laberinto.getInicio() >= 0) {
+            Point posInicio = nodoAPosicion(laberinto.getInicio());
+            
+            // Círculo verde con borde
+            g2d.setColor(new Color(34, 139, 34)); // Verde oscuro
+            int x = posInicio.x * tamañoCelda + margen;
+            int y = posInicio.y * tamañoCelda + margen;
+            g2d.fillOval(x, y, tamaño, tamaño);
+            
+            g2d.setColor(Color.WHITE);
+            g2d.setStroke(new BasicStroke(1));
+            g2d.drawOval(x, y, tamaño, tamaño);
+            
+            // Letra "S"
+            dibujarLetra(g2d, "S", posInicio, Color.WHITE);
+        }
+        
+        // Punto final (rojo)
+        if (laberinto.getFin() >= 0) {
+            Point posFin = nodoAPosicion(laberinto.getFin());
+            
+            // Círculo rojo con borde
+            g2d.setColor(new Color(178, 34, 34)); // Rojo oscuro
+            int x = posFin.x * tamañoCelda + margen;
+            int y = posFin.y * tamañoCelda + margen;
+            g2d.fillOval(x, y, tamaño, tamaño);
+            
+            g2d.setColor(Color.WHITE);
+            g2d.setStroke(new BasicStroke(1));
+            g2d.drawOval(x, y, tamaño, tamaño);
+            
+            // Letra "E"
+            dibujarLetra(g2d, "E", posFin, Color.WHITE);
+        }
+    }
+    
+    private void dibujarLetra(Graphics2D g2d, String letra, Point posicion, Color color) {
+        g2d.setColor(color);
+        
+        // Calcular tamaño de fuente
+        int tamañoFuente = Math.max(tamañoCelda * 2 / 3, 10);
+        g2d.setFont(new Font("Arial", Font.BOLD, tamañoFuente));
+        
+        FontMetrics fm = g2d.getFontMetrics();
+        int textoX = posicion.x * tamañoCelda + (tamañoCelda - fm.stringWidth(letra)) / 2;
+        int textoY = posicion.y * tamañoCelda + (tamañoCelda + fm.getAscent() - fm.getDescent()) / 2;
+        
+        g2d.drawString(letra, textoX, textoY);
+    }
+    
+    private Point nodoAPosicion(int nodo) {
+        int columnas = laberinto.getColumnas();
+        int fila = nodo / columnas;
+        int columna = nodo % columnas;
+        return new Point(columna, fila);
+    }
+}
     
     private void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
