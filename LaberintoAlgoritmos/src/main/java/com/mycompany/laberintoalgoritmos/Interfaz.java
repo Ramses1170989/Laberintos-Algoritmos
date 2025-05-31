@@ -7,7 +7,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -31,7 +34,8 @@ public class Interfaz extends JFrame {
     private JSpinner spinnerFilas, spinnerColumnas;
     private JTextField txtArchivo;
     private JButton btnExaminar, btnCrearLaberinto;
-    
+    private String grafoManual = "";
+
     // Componentes de algoritmos
     private JCheckBox cbBFS, cbDijkstra, cbAStar;
     private JSpinner spinnerInicio, spinnerFin;
@@ -44,7 +48,7 @@ public class Interfaz extends JFrame {
     // Componentes de visualización
     private JPanel panelLaberinto;
     private JLabel lblEstado;
-    
+
     public Interfaz() {
         this.laberinto = new Laberinto();
         this.algoritmos = new Algoritmos();
@@ -285,8 +289,8 @@ public class Interfaz extends JFrame {
                 actualizarEstado("Laberinto aleatorio creado (" + filas + "x" + columnas + ")");
                 
             } else if (rbManual.isSelected()) {
-                // TODO: Implementar creación manual con diálogo
-                mostrarDialogoCreacionManual();
+                creacionManual();
+                return;
                 
             } else if (rbArchivo.isSelected()) {
                 String archivo = txtArchivo.getText().trim();
@@ -299,12 +303,7 @@ public class Interfaz extends JFrame {
             }
             
             // Actualizar límites de spinners inicio/fin
-            int maxNodos = laberinto.getFilas() * laberinto.getColumnas() - 1;
-            spinnerInicio.setModel(new SpinnerNumberModel(0, 0, maxNodos, 1));
-            spinnerFin.setModel(new SpinnerNumberModel(maxNodos, 0, maxNodos, 1));
-            
-            btnResolver.setEnabled(true);
-            visualizarLaberinto();
+            actualizarSpinnersYVisualizacion();
             
         } catch (Exception e) {
             mostrarError("Error al crear laberinto: " + e.getMessage());
@@ -439,7 +438,40 @@ public class Interfaz extends JFrame {
         panelLaberinto.revalidate();
         panelLaberinto.repaint();
     }
-    
+
+    private void creacionManual(){
+        JFrame textoFrame = new JFrame("Crear Laberinto Manualmente");
+        textoFrame.setLayout(new BorderLayout());
+        textoFrame.setSize(400, 300);
+        JTextArea textArea = new JTextArea();
+        JButton btnGuardarTexto = new JButton("Guardar Texto");
+
+        btnGuardarTexto.addActionListener(e -> {
+            grafoManual = textArea.getText();
+            textoFrame.dispose();
+            try {
+                laberinto.cargarDesdeString(grafoManual);
+                actualizarEstado("Laberinto creado manualmente");
+                actualizarSpinnersYVisualizacion();
+            } catch (IOException ex) {
+                mostrarError("Error al crear laberinto: " + ex.getMessage());
+                lblEstado.setText("Error en creación");
+            }
+        });
+
+        textoFrame.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        textoFrame.add(btnGuardarTexto, BorderLayout.SOUTH);
+        textoFrame.setVisible(true);
+    }
+
+    private void actualizarSpinnersYVisualizacion() {
+        int maxNodos = laberinto.getFilas() * laberinto.getColumnas() - 1;
+        spinnerInicio.setModel(new SpinnerNumberModel(0, 0, maxNodos, 1));
+        spinnerFin.setModel(new SpinnerNumberModel(maxNodos, 0, maxNodos, 1));
+        btnResolver.setEnabled(true);
+        visualizarLaberinto();
+    }
+
     // Clase interna para dibujar el laberinto
 private class LaberintoPanel extends JPanel {
     private Laberinto laberinto;

@@ -441,7 +441,75 @@ public class Laberinto {
             throw new IOException("Error al parsear números en el archivo: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Carga un laberinto desde un string.
+     */
+    public void cargarDesdeString(String grafoManual) throws IOException {
+        grafo = new HashMap<>();
+
+        try (BufferedReader reader = new BufferedReader(new StringReader(grafoManual))) {
+            String linea = reader.readLine();
+            if (linea == null) {
+                throw new IOException("String vacío");
+            }
+
+            // Leer dimensiones (primera línea)
+            String[] dimensiones = linea.trim().split(",");
+            if (dimensiones.length != 2) {
+                throw new IOException("Formato incorrecto en la primera línea. Debe ser: filas,columnas");
+            }
+
+            this.filas = Integer.parseInt(dimensiones[0].trim());
+            this.columnas = Integer.parseInt(dimensiones[1].trim());
+
+            // Inicializar todos los nodos
+            for (int i = 0; i < filas * columnas; i++) {
+                grafo.put(i, new ArrayList<>());
+            }
+
+            // Leer lista de adyacencia
+            while ((linea = reader.readLine()) != null) {
+                linea = linea.trim();
+                if (linea.isEmpty()) continue;
+
+                String[] partes = linea.split(":");
+                if (partes.length != 2) {
+                    throw new IOException("Formato incorrecto en línea: " + linea +
+                            ". Debe ser: nodo:vecino1,vecino2,...");
+                }
+
+                int nodo = Integer.parseInt(partes[0].trim());
+                String[] vecinos = partes[1].trim().split(",");
+
+                for (String vecinoStr : vecinos) {
+                    if (!vecinoStr.trim().isEmpty()) {
+                        int vecino = Integer.parseInt(vecinoStr.trim());
+
+                        // Validar que los nodos estén en rango válido
+                        if (nodo >= 0 && nodo < filas * columnas &&
+                                vecino >= 0 && vecino < filas * columnas) {
+
+                            if (!grafo.get(nodo).contains(vecino)) {
+                                grafo.get(nodo).add(vecino);
+                            }
+                            if (!grafo.get(vecino).contains(nodo)) {
+                                grafo.get(vecino).add(nodo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Establecer puntos de inicio y fin por defecto
+            this.inicio = 0;
+            this.fin = filas * columnas - 1;
+
+        } catch (NumberFormatException e) {
+            throw new IOException("Error al parsear números en el string: " + e.getMessage());
+        }
+    }
+
     /**
      * Establece los puntos de inicio y fin del laberinto
      */
