@@ -58,17 +58,17 @@ public class Interfaz extends JFrame {
     }
     
     private void inicializarComponentes() {
-        // Panel principal con BorderLayout
+     
         panelPrincipal = new JPanel(new BorderLayout(10, 10));
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        // Crear paneles
+     
         crearPanelCreacion();
         crearPanelAlgoritmos();
         crearPanelResultados();
         crearPanelVisualizacion();
         
-        // Agregar paneles al principal
+       
         JPanel panelIzquierdo = new JPanel(new BorderLayout(5, 5));
         panelIzquierdo.add(panelCreacion, BorderLayout.NORTH);
         panelIzquierdo.add(panelAlgoritmos, BorderLayout.CENTER);
@@ -77,7 +77,7 @@ public class Interfaz extends JFrame {
         panelPrincipal.add(panelIzquierdo, BorderLayout.WEST);
         panelPrincipal.add(panelVisualizacion, BorderLayout.CENTER);
         
-        // Barra de estado
+       
         lblEstado = new JLabel("Listo para crear laberinto");
         lblEstado.setBorder(BorderFactory.createLoweredBevelBorder());
         panelPrincipal.add(lblEstado, BorderLayout.SOUTH);
@@ -91,7 +91,7 @@ public class Interfaz extends JFrame {
         panelCreacion.setLayout(new BoxLayout(panelCreacion, BoxLayout.Y_AXIS));
         panelCreacion.setPreferredSize(new Dimension(300, 200));
         
-        // Radio buttons para tipo de creación
+      
         rbAleatorio = new JRadioButton("Generar Aleatorio", true);
         rbManual = new JRadioButton("Crear Manual");
         rbArchivo = new JRadioButton("Cargar desde Archivo");
@@ -101,7 +101,7 @@ public class Interfaz extends JFrame {
         grupoCreacion.add(rbManual);
         grupoCreacion.add(rbArchivo);
         
-        // Panel para dimensiones
+      
         JPanel panelDimensiones = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelDimensiones.add(new JLabel("Filas:"));
         spinnerFilas = new JSpinner(new SpinnerNumberModel(5, 3, 50, 1));
@@ -111,7 +111,7 @@ public class Interfaz extends JFrame {
         spinnerColumnas = new JSpinner(new SpinnerNumberModel(5, 3, 50, 1));
         panelDimensiones.add(spinnerColumnas);
         
-        // Panel para archivo
+      
         JPanel panelArchivo = new JPanel(new BorderLayout(5, 5));
         txtArchivo = new JTextField();
         txtArchivo.setEnabled(false);
@@ -122,12 +122,12 @@ public class Interfaz extends JFrame {
         panelArchivo.add(txtArchivo, BorderLayout.CENTER);
         panelArchivo.add(btnExaminar, BorderLayout.EAST);
         
-        // Botón crear
+       
         btnCrearLaberinto = new JButton("Crear Laberinto");
         btnCrearLaberinto.setBackground(new Color(76, 175, 80));
         btnCrearLaberinto.setForeground(Color.WHITE);
         
-        // Agregar componentes
+       
         panelCreacion.add(rbAleatorio);
         panelCreacion.add(panelDimensiones);
         panelCreacion.add(Box.createVerticalStrut(5));
@@ -145,12 +145,12 @@ public class Interfaz extends JFrame {
         panelAlgoritmos.setLayout(new BoxLayout(panelAlgoritmos, BoxLayout.Y_AXIS));
         panelAlgoritmos.setPreferredSize(new Dimension(300, 150));
         
-        // Checkboxes para algoritmos
+       
         cbBFS = new JCheckBox("BFS (Breadth-First Search)", true);
         cbDijkstra = new JCheckBox("Dijkstra");
         cbAStar = new JCheckBox("A* (A-Star)");
         
-        // Panel para puntos inicio/fin
+      
         JPanel panelPuntos = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelPuntos.add(new JLabel("Inicio:"));
         spinnerInicio = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
@@ -160,13 +160,13 @@ public class Interfaz extends JFrame {
         spinnerFin = new JSpinner(new SpinnerNumberModel(24, 0, 100, 1));
         panelPuntos.add(spinnerFin);
         
-        // Botón resolver
+      
         btnResolver = new JButton("Resolver Laberinto");
         btnResolver.setBackground(new Color(33, 150, 243));
         btnResolver.setForeground(Color.WHITE);
         btnResolver.setEnabled(false);
         
-        // Agregar componentes
+      
         panelAlgoritmos.add(cbBFS);
         panelAlgoritmos.add(cbDijkstra);
         panelAlgoritmos.add(cbAStar);
@@ -232,16 +232,16 @@ public class Interfaz extends JFrame {
         setLocationRelativeTo(null);
         setResizable(true);
         
-        // Icono de la ventana (opcional)
+       
         try {
-            // setIconImage(new ImageIcon("icono.png").getImage());
+           
         } catch (Exception e) {
-            // Ignorar si no hay icono
+            
         }
     }
     
     private void configurarEventos() {
-        // Eventos de radio buttons
+      
         ActionListener radioListener = e -> {
             boolean esArchivo = rbArchivo.isSelected();
             txtArchivo.setEnabled(esArchivo);
@@ -256,13 +256,13 @@ public class Interfaz extends JFrame {
         rbManual.addActionListener(radioListener);
         rbArchivo.addActionListener(radioListener);
         
-        // Evento botón examinar
+       
         btnExaminar.addActionListener(e -> examinarArchivo());
         
-        // Evento botón crear laberinto
+     
         btnCrearLaberinto.addActionListener(e -> crearLaberinto());
         
-        // Evento botón resolver
+     
         btnResolver.addActionListener(e -> resolverLaberinto());
     }
     
@@ -301,7 +301,7 @@ public class Interfaz extends JFrame {
                 actualizarEstado("Laberinto cargado desde: " + archivo);
             }
             
-            // Actualizar límites de spinners inicio/fin
+          
             actualizarSpinnersYVisualizacion();
             
         } catch (Exception e) {
@@ -342,7 +342,7 @@ public class Interfaz extends JFrame {
             
             Resultado mejorResultado = null;
             
-            // Ejecutar algoritmos seleccionados
+         
             if (cbBFS.isSelected()) {
                 Resultado resultado = algoritmos.buscarBFS(laberinto);
                 resultados.add(resultado);
@@ -370,11 +370,11 @@ public class Interfaz extends JFrame {
                 }
             }
             
-            // Mostrar resultados
+       
             areaResultados.setText(textoResultados.toString());
             areaResultados.setCaretPosition(0);
             
-            // Mostrar la mejor ruta en la visualización
+          
             if (mejorResultado != null && !mejorResultado.obtenerRuta().isEmpty()) {
                 Component[] componentes = panelLaberinto.getComponents();
                 for (Component comp : componentes) {
@@ -397,16 +397,16 @@ public class Interfaz extends JFrame {
     }
     
     private boolean esMejorRuta(Resultado nuevo, Resultado actual) {
-        // Primero verificar si encontró ruta
+      
         if (nuevo.obtenerRuta().isEmpty()) return false;
         if (actual.obtenerRuta().isEmpty()) return true;
         
-        // Comparar longitud de ruta (menor es mejor)
+       
         if (nuevo.getLongitudRuta() != actual.getLongitudRuta()) {
             return nuevo.getLongitudRuta() < actual.getLongitudRuta();
         }
         
-        // Si tienen la misma longitud, comparar tiempo (menor es mejor)
+        
         return nuevo.getTiempoEjecucion() < actual.getTiempoEjecucion();
     }
     
@@ -474,13 +474,13 @@ public class Interfaz extends JFrame {
         visualizarLaberinto();
     }
 
-    // Clase interna para dibujar el laberinto
+   
 private class LaberintoPanel extends JPanel {
     private Laberinto laberinto;
     private int tamañoCelda = 20;
     private List<Integer> rutaActual = new ArrayList<>();
-    private boolean[][] paredesHorizontales; // true = hay pared
-    private boolean[][] paredesVerticales;   // true = hay pared
+    private boolean[][] paredesHorizontales; 
+    private boolean[][] paredesVerticales;  
     
     public LaberintoPanel(Laberinto laberinto) {
         this.laberinto = laberinto;
@@ -498,7 +498,7 @@ private class LaberintoPanel extends JPanel {
         int filas = laberinto.getFilas();
         int columnas = laberinto.getColumnas();
         
-        // Calcular tamaño óptimo
+    
         int anchoDisponible = 400;
         int altoDisponible = 400;
         
@@ -507,7 +507,7 @@ private class LaberintoPanel extends JPanel {
         
         tamañoCelda = Math.min(Math.max(Math.min(tamañoPorAncho, tamañoPorAlto), 15), 40);
         
-        // Establecer tamaño preferido del panel
+   
         setPreferredSize(new Dimension(
             columnas * tamañoCelda + 1,
             filas * tamañoCelda + 1
@@ -518,11 +518,11 @@ private class LaberintoPanel extends JPanel {
         int filas = laberinto.getFilas();
         int columnas = laberinto.getColumnas();
         
-        // Inicializar todas las paredes como existentes
+      
         paredesHorizontales = new boolean[filas + 1][columnas];
         paredesVerticales = new boolean[filas][columnas + 1];
         
-        // Poner todas las paredes inicialmente
+        
         for (int i = 0; i <= filas; i++) {
             for (int j = 0; j < columnas; j++) {
                 paredesHorizontales[i][j] = true;
@@ -535,7 +535,7 @@ private class LaberintoPanel extends JPanel {
             }
         }
         
-        // Quitar paredes basándose en las conexiones del grafo
+       
         for (Map.Entry<Integer, List<Integer>> entrada : laberinto.getGrafo().entrySet()) {
             Integer nodoOrigen = entrada.getKey();
             Point posOrigen = nodoAPosicion(nodoOrigen);
@@ -548,13 +548,13 @@ private class LaberintoPanel extends JPanel {
     }
     
     private void quitarPared(Point origen, Point destino) {
-        if (origen.x == destino.x) { // Movimiento vertical
+        if (origen.x == destino.x) { 
             int fila = Math.max(origen.y, destino.y);
             int columna = origen.x;
             if (fila < paredesHorizontales.length && columna < paredesHorizontales[0].length) {
                 paredesHorizontales[fila][columna] = false;
             }
-        } else if (origen.y == destino.y) { // Movimiento horizontal
+        } else if (origen.y == destino.y) { 
             int fila = origen.y;
             int columna = Math.max(origen.x, destino.x);
             if (fila < paredesVerticales.length && columna < paredesVerticales[0].length) {
@@ -573,11 +573,11 @@ private class LaberintoPanel extends JPanel {
         int filas = laberinto.getFilas();
         int columnas = laberinto.getColumnas();
         
-        // Dibujar fondo blanco para todas las celdas
+      
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, columnas * tamañoCelda, filas * tamañoCelda);
         
-        // Dibujar celdas que NO están en el grafo como bloqueadas (grises)
+      
         g2d.setColor(new Color(200, 200, 200));
         for (int fila = 0; fila < filas; fila++) {
             for (int col = 0; col < columnas; col++) {
@@ -590,15 +590,15 @@ private class LaberintoPanel extends JPanel {
             }
         }
         
-        // Dibujar la ruta si existe
+    
         if (!rutaActual.isEmpty()) {
             dibujarRuta(g2d);
         }
         
-        // Dibujar las paredes
+     
         dibujarParedes(g2d);
         
-        // Dibujar puntos especiales (inicio y fin)
+       
         dibujarPuntosEspeciales(g2d);
         
         g2d.dispose();
@@ -611,7 +611,7 @@ private class LaberintoPanel extends JPanel {
         int filas = laberinto.getFilas();
         int columnas = laberinto.getColumnas();
         
-        // Dibujar paredes horizontales
+    
         for (int i = 0; i <= filas; i++) {
             for (int j = 0; j < columnas; j++) {
                 if (paredesHorizontales[i][j]) {
@@ -624,7 +624,7 @@ private class LaberintoPanel extends JPanel {
             }
         }
         
-        // Dibujar paredes verticales
+       
         for (int i = 0; i < filas; i++) {
             for (int j = 0; j <= columnas; j++) {
                 if (paredesVerticales[i][j]) {
@@ -641,8 +641,8 @@ private class LaberintoPanel extends JPanel {
     private void dibujarRuta(Graphics2D g2d) {
         if (rutaActual.size() < 2) return;
         
-        // Dibujar fondo de la ruta
-        g2d.setColor(new Color(135, 206, 250, 100)); // Azul claro semitransparente
+      
+        g2d.setColor(new Color(135, 206, 250, 100)); 
         for (Integer nodo : rutaActual) {
             Point pos = nodoAPosicion(nodo);
             int x = pos.x * tamañoCelda + 2;
@@ -650,7 +650,7 @@ private class LaberintoPanel extends JPanel {
             g2d.fillRect(x, y, tamañoCelda - 4, tamañoCelda - 4);
         }
         
-        // Dibujar línea de la ruta
+   
         g2d.setColor(new Color(0, 100, 255));
         g2d.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         
@@ -671,12 +671,12 @@ private class LaberintoPanel extends JPanel {
         int margen = 3;
         int tamaño = tamañoCelda - 2 * margen;
         
-        // Punto de inicio (verde)
+    
         if (laberinto.getInicio() >= 0) {
             Point posInicio = nodoAPosicion(laberinto.getInicio());
             
-            // Círculo verde con borde
-            g2d.setColor(new Color(34, 139, 34)); // Verde oscuro
+         
+            g2d.setColor(new Color(34, 139, 34)); 
             int x = posInicio.x * tamañoCelda + margen;
             int y = posInicio.y * tamañoCelda + margen;
             g2d.fillOval(x, y, tamaño, tamaño);
@@ -685,15 +685,15 @@ private class LaberintoPanel extends JPanel {
             g2d.setStroke(new BasicStroke(1));
             g2d.drawOval(x, y, tamaño, tamaño);
             
-            // Letra "S"
+         
             dibujarLetra(g2d, "S", posInicio, Color.WHITE);
         }
         
-        // Punto final (rojo)
+      
         if (laberinto.getFin() >= 0) {
             Point posFin = nodoAPosicion(laberinto.getFin());
             
-            // Círculo rojo con borde
+        
             g2d.setColor(new Color(178, 34, 34)); // Rojo oscuro
             int x = posFin.x * tamañoCelda + margen;
             int y = posFin.y * tamañoCelda + margen;
@@ -703,7 +703,7 @@ private class LaberintoPanel extends JPanel {
             g2d.setStroke(new BasicStroke(1));
             g2d.drawOval(x, y, tamaño, tamaño);
             
-            // Letra "E"
+        
             dibujarLetra(g2d, "E", posFin, Color.WHITE);
         }
     }
@@ -711,7 +711,7 @@ private class LaberintoPanel extends JPanel {
     private void dibujarLetra(Graphics2D g2d, String letra, Point posicion, Color color) {
         g2d.setColor(color);
         
-        // Calcular tamaño de fuente
+       
         int tamañoFuente = Math.max(tamañoCelda * 2 / 3, 10);
         g2d.setFont(new Font("Arial", Font.BOLD, tamañoFuente));
         
